@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<cinder>
+<block
+	name="Spout"
+	id="fr.batchass.spout"
+	author="Bruce Lane"
+	license="BSD"
+	summary="Spout block for Cinder"
+	url="https://github.com/brucelane/Cinder-Spout"
+	git="git://github.com/brucelane/Cinder-Spout.git"
+	>
+	<supports os="msw" />
+	<header>include/Spout.h</header>
+	<includePath>include</includePath>
+	<staticLibrary>lib/Spout32.lib</staticLibrary>
+	<buildCopy>lib/Spout32.dll</buildCopy>
+</block>
+<template>templates/Spout/template.xml</template>
+</cinder>
