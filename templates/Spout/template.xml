@@ -5,5 +5,5 @@
 	<source replaceContents="true" replaceName="true">src/_TBOX_PREFIX_App.cpp</source>
 	<header>include/Spout.h</header>
 	<asset>assets/SpoutLogoMarble3.jpg</asset>
-<</template>
+</template>
 </cinder>

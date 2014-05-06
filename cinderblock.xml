@@ -4,7 +4,7 @@
 	name="Spout"
 	id="fr.batchass.spout"
 	author="Bruce Lane"
-	license="BSD"
+	license="MIT"
 	summary="Spout block for Cinder"
 	url="https://github.com/brucelane/Cinder-Spout"
 	git="git://github.com/brucelane/Cinder-Spout.git"
