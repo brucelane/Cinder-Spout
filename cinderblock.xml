@@ -10,8 +10,8 @@
 	git="git://github.com/brucelane/Cinder-Spout.git"
 	>
 	<supports os="msw" />
-	<header>include/Spout.h</header>
 	<includePath>include</includePath>
+	<header>include/Spout.h</header>
 	<staticLibrary>lib/Spout32.lib</staticLibrary>
 	<buildCopy>lib/Spout32.dll</buildCopy>
 </block>
