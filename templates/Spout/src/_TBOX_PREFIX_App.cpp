@@ -36,7 +36,7 @@
 #include <vector>
 
 // spout
-#include "spout.h"
+#include "SpoutSend.h"
 
 using namespace ci;
 using namespace ci::app;

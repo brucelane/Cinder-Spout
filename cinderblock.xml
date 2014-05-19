@@ -11,9 +11,12 @@
 	>
 	<supports os="msw" />
 	<includePath>include</includePath>
-	<header>include/Spout.h</header>
-	<staticLibrary>lib/Spout32.lib</staticLibrary>
-	<buildCopy>lib/Spout32.dll</buildCopy>
+	<header>include/SpoutSend.h</header>
+	<header>include/SpoutReceive.h</header>
+	<staticLibrary>lib/SpoutSend32.lib</staticLibrary>
+	<buildCopy>lib/SpoutSend32.dll</buildCopy>
+	<staticLibrary>lib/SpoutReceive32.lib</staticLibrary>
+	<buildCopy>lib/SpoutReceive32.dll</buildCopy>
 </block>
 <template>templates/Spout/template.xml</template>
 </cinder>
