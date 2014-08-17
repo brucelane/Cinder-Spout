@@ -30,12 +30,20 @@
 */
 #pragma once
 
-#ifndef __Spout__
-#define __Spout__
+#ifndef __SpoutCommon__
+#define __SpoutCommon__
 
-#include "SpoutSender.h"
-#include "SpoutReceiver.h"
+#if defined(_MSC_VER)
+	#if defined(SPOUT_BUILD_DLL)
+		#define SPOUT_DLLEXP	__declspec(dllexport)
+	#elif defined(SPOUT_IMPORT_DLL)
+		#define SPOUT_DLLEXP	__declspec(dllimport)
+	#else
+		#define SPOUT_DLLEXP
+	#endif
+#else // _MSC_VER
+	#define SPOUT_DLLEXP
+#endif // _MSC_VERR
 
-//	All documentation in the SDK pdf = SpoutSDK.pdf
 
 #endif

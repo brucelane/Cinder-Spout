@@ -1,8 +1,9 @@
 /*
 
-			Spout.h
+	spoutDirectX.h
 
-			The main Spout include file for the SDK
+	DirectX functions to manage DirectX 11 texture sharing
+
 
 		Copyright (c) 2014>, Lynn Jarvis. All rights reserved.
 
@@ -26,16 +27,46 @@
 		LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 		OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 */
 #pragma once
+#ifndef __spoutDirectX__ 
+#define __spoutDirectX__
 
-#ifndef __Spout__
-#define __Spout__
+#include "SpoutCommon.h"
+#include <windowsx.h>
+#include <d3d9.h>
+#include <d3d11.h>
+#include <string>
 
-#include "SpoutSender.h"
-#include "SpoutReceiver.h"
+#pragma comment (lib, "d3d9.lib")
+#pragma comment (lib, "d3d11.lib")
 
-//	All documentation in the SDK pdf = SpoutSDK.pdf
+class SPOUT_DLLEXP spoutDirectX {
+
+	public:
+
+		spoutDirectX();
+		~spoutDirectX();
+
+		// DX9
+		IDirect3D9Ex* CreateDX9object(); // Create a DirectX9 object
+		IDirect3DDevice9Ex* CreateDX9device(IDirect3D9Ex* pD3D, HWND hWnd);	// Create a DirectX9 device
+		bool CreateSharedDX9Texture(IDirect3DDevice9Ex* pDevice, unsigned int width, unsigned int height, D3DFORMAT format, LPDIRECT3DTEXTURE9 &dxTexture, HANDLE &dxShareHandle);
+
+		// DX11
+		ID3D11Device* CreateDX11device(); // Create a DX11 device
+		bool CreateSharedDX11Texture(ID3D11Device* pDevice, unsigned int width, unsigned int height, DXGI_FORMAT format, ID3D11Texture2D** pSharedTexture, HANDLE &dxShareHandle);
+		bool OpenDX11shareHandle(ID3D11Device* pDevice, ID3D11Texture2D** pSharedTexture, HANDLE dxShareHandle);
+		void CloseDX11();
+
+
+	protected:
+
+		ID3D11DeviceContext*	g_pImmediateContext;
+		D3D_DRIVER_TYPE			g_driverType;
+		D3D_FEATURE_LEVEL		g_featureLevel;
+		ID3D11Texture2D*		g_pSharedTexture; // The shared DX11 texture
+
+};
 
 #endif
