@@ -30,6 +30,9 @@
 */
 
 #include "cinder/app/AppNative.h"
+#include "cinder/app/RendererGl.h"
+#include "cinder/gl/Batch.h"
+#include "cinder/gl/GlslProg.h"
 #include "cinder/ImageIo.h"
 #include "cinder/gl/Texture.h"
 #include "cinder/Camera.h"
@@ -53,17 +56,19 @@ public:
 private:
     // spout
     // still using the cam vars from the cinder demo
-    CameraPersp mCam;
-    gl::Texture cubeTexture;
-    Matrix44f   mCubeRotation;
+    CameraPersp         mCam;
+    gl::TextureRef      cubeTexture;
+    mat4                mCubeRotation;
+    gl::BatchRef        mBatchCube;
+    gl::GlslProgRef     mGlslCube;
 
     // -------- SPOUT -------------
-    SpoutSender spoutsender;                    // Create a Spout sender object
-    bool bInitialized;                          // true if a sender initializes OK
-    bool bMemoryMode;                           // tells us if texture share compatible
-    unsigned int g_Width, g_Height;             // size of the texture being sent out
-    char SenderName[256];                       // sender name 
-    gl::Texture spoutTexture;                   // Local Cinder texture used for sharing
+    SpoutSender         spoutsender;                   // Create a Spout sender object
+    bool                bInitialized;                  // true if a sender initializes OK
+    bool                bMemoryMode;                   // tells us if texture share compatible
+    unsigned int        g_Width, g_Height;             // size of the texture being sent out
+    char                SenderName[256];               // sender name 
+    gl::TextureRef      spoutTexture;                  // Local Cinder texture used for sharing
     // ----------------------------
 
 };
@@ -83,10 +88,12 @@ void _TBOX_PREFIX_App::prepareSettings(Settings *settings)
 void _TBOX_PREFIX_App::setup()
 {
     // load an image to texture the demo cube with
-    cubeTexture = loadImage( "../assets/SpoutLogoMarble3.jpg" );
-    
-    mCam.lookAt( Vec3f( 3, 2, -3 ), Vec3f::zero() );
-    mCubeRotation.setToIdentity();
+    cubeTexture = gl::Texture::create(loadImage(loadAsset("SpoutLogoMarble3.jpg")));
+    mGlslCube = gl::GlslProg::create(loadAsset("cubeshader.vert"), loadAsset("cubeshader.frag"));
+    mBatchCube = gl::Batch::create(geom::Cube(), mGlslCube);
+   
+    mCam.lookAt( vec3( 3, 2, -3 ), vec3(0) );
+    //mCubeRotation.setToIdentity();
     glEnable( GL_TEXTURE_2D );
     gl::enableDepthRead();
     gl::enableDepthWrite(); 
@@ -94,20 +101,23 @@ void _TBOX_PREFIX_App::setup()
     // -------- SPOUT -------------
     // Set up the texture we will use to send out
     // We grab the screen so it has to be the same size
-    spoutTexture =  gl::Texture(g_Width, g_Height);
+    spoutTexture =  gl::Texture::create(g_Width, g_Height);
     strcpy_s(SenderName, "CINDER Spout SDK Sender"); // we have to set a sender name first
     // Optionally test for texture share compatibility
     // bMemoryMode informs us whether Spout initialized for texture share or memory share
     bMemoryMode = spoutsender.GetMemoryShareMode();
     // Initialize a sender
     bInitialized = spoutsender.CreateSender(SenderName, g_Width, g_Height);
+    // Use DirectX 9 textures for maximum compatibility
+    spoutsender.SetDX9(true);
+
     // ----------------------------
 }
 
 void _TBOX_PREFIX_App::update()
 {
     // Rotate the cube by .015 radians around an arbitrary axis
-    mCubeRotation.rotate( Vec3f( 1, 1, 1 ), 0.015f );
+    mCubeRotation *= rotate(0.015f, vec3(1, 1, 1));
 
     mCam.setPerspective( 60, getWindowAspectRatio(), 1, 1000 );
     gl::setMatrices( mCam );
@@ -120,26 +130,26 @@ void _TBOX_PREFIX_App::draw()
     if( ! cubeTexture )
         return;
 
-    cubeTexture.bind();
-    glPushMatrix();
-        gl::multModelView( mCubeRotation );
-        gl::drawCube( Vec3f::zero(), Vec3f( 2.5f, 2.5f, 2.5f ) );
-    glPopMatrix();
-    cubeTexture.unbind();
+    cubeTexture->bind();
+    gl::pushMatrices();
+    gl::multModelMatrix(mCubeRotation);
+    mBatchCube->draw();
+    gl::popMatrices();
+    cubeTexture->unbind();
 
 
     // -------- SPOUT -------------
     if(bInitialized) {
 
         // Grab the screen (current read buffer) into the local spout texture
-        spoutTexture.bind();
+        spoutTexture->bind();
         glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, g_Width, g_Height);
-        spoutTexture.unbind();
+        spoutTexture->unbind();
 
         // Send the texture for all receivers to use
         // NOTE : if SendTexture is called with a framebuffer object bound, that binding will be lost
         // and has to be restored afterwards because Spout uses an fbo for intermediate rendering
-        spoutsender.SendTexture(spoutTexture.getId(), spoutTexture.getTarget(), g_Width, g_Height);
+        spoutsender.SendTexture(spoutTexture->getId(), spoutTexture->getTarget(), g_Width, g_Height);
 
     }
 
@@ -148,9 +158,9 @@ void _TBOX_PREFIX_App::draw()
     sprintf_s(txt, "Sending as [%s]", SenderName);
     gl::setMatricesWindow( getWindowSize() );
     gl::enableAlphaBlending();
-    gl::drawString( txt, Vec2f( toPixels( 20 ), toPixels( 20 ) ), Color( 1, 1, 1 ), Font( "Verdana", toPixels( 24 ) ) );
+    gl::drawString( txt, vec2( toPixels( 20 ), toPixels( 20 ) ), Color( 1, 1, 1 ), Font( "Verdana", toPixels( 24 ) ) );
     sprintf_s(txt, "fps : %2.2d", (int)getAverageFps());
-    gl::drawString( txt, Vec2f(getWindowWidth() - toPixels( 100 ), toPixels( 20 ) ), Color( 1, 1, 1 ), Font( "Verdana", toPixels( 24 ) ) );
+    gl::drawString( txt, vec2(getWindowWidth() - toPixels( 100 ), toPixels( 20 ) ), Color( 1, 1, 1 ), Font( "Verdana", toPixels( 24 ) ) );
     gl::disableAlphaBlending();
     // ----------------------------
 }

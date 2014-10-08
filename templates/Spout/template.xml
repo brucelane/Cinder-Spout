@@ -4,5 +4,7 @@
 	<requires>fr.batchass.spout</requires>
 	<source replaceContents="true" replaceName="true">src/_TBOX_PREFIX_App.cpp</source>
 	<asset>assets/SpoutLogoMarble3.jpg</asset>
+	<asset>assets/cubeshader.vert</asset>
+	<asset>assets/cubeshader.frag</asset>
 </template>
 </cinder>
