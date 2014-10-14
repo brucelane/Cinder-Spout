@@ -13,6 +13,7 @@
 	<includePath>include</includePath>
 	<staticLibrary>lib/Spout.lib</staticLibrary>
 	<buildCopy>lib/Spout.dll</buildCopy>
+	<buildCopy>lib/SpoutPanel.exe</buildCopy>
 </block>
 <template>templates/Spout/template.xml</template>
 </cinder>

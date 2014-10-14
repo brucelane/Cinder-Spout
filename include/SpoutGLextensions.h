@@ -17,10 +17,10 @@
 //
 //			Spout project									FBO		PBO		GLEW	SWAP	BLIT	GLDX
 //			FFGL - SpoutReceiver, SpoutSender				 -		 -		 -		 +		 +		 +
-//			MAX - jit.gl.spoutsender, jit.gl.spoutreceiver	 -		 +		 -		 +		 +		 +
+//			MAX - jit.gl.spoutsender, jit.gl.spoutreceiver	 -		 -		 -		 +		 +		 +
 //			PROCESSING - Jspout JNI dll						 +		 -		 -		 +		 +		 +
 //			SpoutCam										 -		 -		 +		 +		 +		 +
-//			SpoutPanel										 +		 +		 -		 +		 +		 +
+//			SpoutPanel										 +		 -		 -		 +		 +		 +
 //			SpoutTray										 -		 -		 +		 +		 +		 +
 //			Spout dll										 +		 +		 -		 +		 +		 +
 //			WinSpout										 +		 -		 -		 +		 +		 +
@@ -58,7 +58,7 @@
 
 #define GLEW_STATIC // to use glew32s.lib instead of glew32.lib
 
-// set this to use GLEW instead of dynamic load of extensions
+// set this to use GLEW instead of dynamic load of extensions - used for SpoutCam and SpoutTray
 // #define USE_GLEW	
 
 // *** Load of FBO extensions conflicts with FFGL or Jitter, disable them here ***
