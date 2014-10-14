@@ -40,7 +40,7 @@ class SPOUT_DLLEXP SpoutReceiver {
     ~SpoutReceiver();
 
 	bool CreateReceiver(char* Sendername, unsigned int &width, unsigned int &height, bool bUseActive = false);
-	bool ReceiveTexture(char* Sendername, unsigned int &width, unsigned int &height, GLuint TextureID = 0, GLuint TextureTarget = 0);
+	bool ReceiveTexture(char* Sendername, unsigned int &width, unsigned int &height, GLuint TextureID = 0, GLuint TextureTarget = 0, GLuint HostFBO = 0);
 	bool ReceiveImage  (char* Sendername, unsigned int &width, unsigned int &height, unsigned char * pixels, GLenum glFormat = GL_RGB);
 	bool GetImageSize  (char* Sendername, unsigned int &width, unsigned int &height, bool &bMemoryMode);
 	void ReleaseReceiver(); 
@@ -56,26 +56,25 @@ class SPOUT_DLLEXP SpoutReceiver {
 	bool GetActiveSender(char* Sendername);
 	bool SetActiveSender(char* Sendername);
 		
-	bool SelectSenderPanel(char* message = NULL);
+	bool SelectSenderPanel(const char* message = NULL);
 
 	bool GetMemoryShareMode();
 	bool SetMemoryShareMode(bool bMemory = true);	
 
-	void SetDX9(bool bDX9 = true); // set to use DirectX 9 (default is DirectX 11)
+	bool SetDX9(bool bDX9 = true); // set to use DirectX 9 (default is DirectX 11)
 	bool GetDX9();
 
 	void SetDX9compatible(bool bCompatible = true);
 	bool GetDX9compatible();
 
-	bool SetVerticalSync(bool bSync);
-	bool GetVerticalSync();
+	bool SetVerticalSync(bool bSync = true);
+	int GetVerticalSync();
 
 	Spout spout; // for debug
 
 protected :
 
 	// Spout spout;
-
 
 };
 

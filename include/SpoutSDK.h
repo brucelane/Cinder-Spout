@@ -38,6 +38,7 @@
 #include <iostream>
 #include <fstream>
 #include "Shellapi.h"
+#include <Mmsystem.h>		// for timegettime
 
 #include "SpoutCommon.h"
 #include "spoutMemoryShare.h"
@@ -64,20 +65,24 @@ class SPOUT_DLLEXP Spout {
 	bool CreateSender(char *name, unsigned int width, unsigned int height, DWORD dwFormat = 0);
 	bool UpdateSender(char* Sendername, unsigned int width, unsigned int height);
 	void ReleaseSender(DWORD dwMsec = 0);
-	bool SendTexture(GLuint TextureID, GLuint TextureTarget, unsigned int width, unsigned int height, bool bInvert=true);
-	bool SendImage(unsigned char* pixels, unsigned int width, unsigned int height, bool bInvert=true);
+	bool SendTexture(GLuint TextureID, GLuint TextureTarget, unsigned int width, unsigned int height, bool bInvert=true, GLuint HostFBO=0);
+	bool SendImage(unsigned char* pixels, unsigned int width, unsigned int height, GLenum glFormat = GL_RGBA, bool bAlignment = true, bool bInvert=true);
 
 	// Receiver
 	bool CreateReceiver(char* name, unsigned int &width, unsigned int &height, bool bUseActive = false);
 	void ReleaseReceiver(); 
-	bool ReceiveTexture(char* Sendername, unsigned int &width, unsigned int &height, GLuint TextureID = 0, GLuint TextureTarget = 0);
-	bool ReceiveImage(char* Sendername, unsigned int &width, unsigned int &height, unsigned char* pixels, int glFormat);
+
+	bool ReceiveTexture(char* Sendername, unsigned int &width, unsigned int &height, GLuint TextureID = 0, GLuint TextureTarget = 0, GLuint HostFBO=0);
+	bool ReceiveImage(char* Sendername, unsigned int &width, unsigned int &height, unsigned char* pixels, GLenum glFormat = GL_RGBA);
+	
 	bool GetImageSize (char* sendername, unsigned int &width, unsigned int &height, bool &bMemoryMode);	
 
 	bool BindSharedTexture();
 	bool UnBindSharedTexture();
-	bool DrawSharedTexture(float max_x = 1.0, float max_y = 1.0, float aspect = 1.0);
 	
+	bool DrawSharedTexture(float max_x = 1.0, float max_y = 1.0, float aspect = 1.0);
+	bool DrawToSharedTexture(GLuint TextureID, GLuint TextureTarget, unsigned int width, unsigned int height, float max_x = 1.0, float max_y = 1.0, float aspect = 1.0, bool bInvert = true, GLuint HostFBO = 0);
+
 	int  GetSenderCount();
 	bool GetSenderName(int index, char* sendername, int MaxSize = 256);
 	bool GetSenderInfo(char* sendername, unsigned int &width, unsigned int &height, HANDLE &dxShareHandle, DWORD &dwFormat);
@@ -85,18 +90,19 @@ class SPOUT_DLLEXP Spout {
 	bool SetActiveSender(char* Sendername);
 	
 	// Utilities
-	void SetDX9(bool bDX9 = true); // set to use DirectX 9 (default is DirectX 11)
+	bool SetDX9(bool bDX9 = true); // set to use DirectX 9 (default is DirectX 11)
 	bool GetDX9();
 
 	bool GetMemoryShareMode();
 	bool SetMemoryShareMode(bool bMemory = true);
-	bool GetVerticalSync();
+	int  GetVerticalSync();
 	bool SetVerticalSync(bool bSync = true);
-	bool SelectSenderPanel(char* message = NULL);
+	bool SelectSenderPanel(const char* message = NULL);
 
+	// Public for debugging
+	bool CheckSpoutPanel();
+	
 	spoutGLDXinterop interop;		// Opengl/directx interop texture sharing
-	// spoutSenderNames senders;		// Spout sender management
-	// spoutMemoryShare MemoryShare;	// Shared memory method
 
 /*
 //
@@ -129,16 +135,11 @@ DXGI_FORMAT_R8G8B8A8_TYPELESS				= 27,
 
 	protected :
 
-	// spoutGLDXinterop interop;		// Opengl/directx interop texture sharing
-	// spoutSenderNames senders;		// Spout sender management
-	// spoutMemoryShare MemoryShare;	// Shared memory method
-
 	// ================================= //
 	//  PRIVATE VARIABLES AND FUNCTIONS  //
 	// ================================= //
 	char g_SharedMemoryName[256];
 	char UserSenderName[256]; // used for the sender selection dialog
-	// char temp[1024];
 	unsigned int g_Width;
 	unsigned int g_Height;
 	HANDLE g_ShareHandle;
@@ -163,10 +164,14 @@ DXGI_FORMAT_R8G8B8A8_TYPELESS				= 27,
 	bool InitMemoryShare(bool bReceiver);
 	bool ReleaseMemoryShare();
 	void SpoutCleanUp(bool bExit = false);
-	bool FlipVertical(unsigned char *src, unsigned int width, unsigned int height);
-	bool CheckSpoutPanel();
-	bool CheckSpoutDialog();
+	bool FlipVertical(unsigned char *src, unsigned int width, unsigned int height, GLenum glFormat = GL_RGB);
 
+	// FPS calcs - TODO cleanup
+	double timeNow, timeThen, elapsedTime, frameTime, lastFrameTime, frameRate, fps, PCFreq, waitMillis, millisForFrame;
+	__int64 CounterStart;
+	// TODO - used ? cleanup
+	void StartCounter();
+	double GetCounter();
 
 };
 
