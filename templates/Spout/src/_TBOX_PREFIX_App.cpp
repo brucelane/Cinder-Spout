@@ -1,9 +1,9 @@
 /*
                 
-        Basic Spout app for Cinder
+        Basic Spout sender for Cinder
 
         Search for "SPOUT" to see what is required
-        Uses the Spout dll
+        Uses the Spout SDK
 
         Based on the RotatingBox CINDER example without much modification
         Nothing fancy about this, just the basics.
@@ -27,9 +27,21 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
     ==========================================================================
 
+    11.05.14 - used updated Spout Dll with host fbo option and rgba
+    04.06.14 - updated Spout dll 04/06 - host fbo option removed
+    11.07.14 - changed to Spout SDK instead of the dll
+    29.09.14 - updated to revised SDK
+    12.10.14 - recompiled for release
+    03.01.15 - SDK recompile
+    04.02.15 - SDK recompile for default DX9 (see SpoutGLDXinterop.h)
+    14.02.15 - SDK recompile for default DX11 and auto compatibility detection (see SpoutGLDXinterop.cpp)
+    21.05.15 - Added optional SetDX9 call
+             - Recompiled for both DX9 and DX11 for new installer
+    26.05.15 - Recompile for revised SpoutPanel registry write of sender name
+
 */
 
-#include "cinder/app/AppNative.h"
+#include "cinder/app/App.h"
 #include "cinder/app/RendererGl.h"
 #include "cinder/gl/Batch.h"
 #include "cinder/gl/GlslProg.h"
@@ -47,8 +59,7 @@ using namespace std;
 
 class _TBOX_PREFIX_App : public AppNative {
 public:
-    void prepareSettings(Settings *settings);
-	void setup();
+ 	void setup();
 	void update();
 	void draw();
     void mouseDown(MouseEvent event);
@@ -82,19 +93,15 @@ private:
 };
 
 // -------- SPOUT -------------
-void _TBOX_PREFIX_App::prepareSettings(Settings *settings)
-{
-        g_Width  = 640;
-        g_Height = 512;
-        settings->setWindowSize( g_Width, g_Height );
-        settings->setFullScreen( false );
-        settings->setResizable( false ); // keep the screen size constant for a sender
-        settings->setFrameRate( 60.0f );
-}
-// ----------------------------
 
 void _TBOX_PREFIX_App::setup()
 {
+    g_Width  = 640;
+    g_Height = 512;
+    setWindowSize( g_Width, g_Height );
+    setFullScreen( false );
+    setResizable( false ); // keep the screen size constant for a sender
+    setFrameRate( 60.0f );
     // load an image to texture the demo cube with
     cubeTexture = gl::Texture::create(loadImage(loadAsset("SpoutLogoMarble3.jpg")));
     mGlslCube = gl::GlslProg::create(loadAsset("cubeshader.vert"), loadAsset("cubeshader.frag"));
@@ -286,4 +293,4 @@ void _TBOX_PREFIX_App::shutdown()
     spoutreceiver.ReleaseReceiver();
 }
 // This line tells Cinder to actually create the application
-CINDER_APP_NATIVE( _TBOX_PREFIX_App, RendererGl )
+CINDER_APP( _TBOX_PREFIX_App, RendererGl )
