@@ -11,8 +11,8 @@
 	>
 	<supports os="msw" />
 	<includePath>include</includePath>
-	<staticLibrary>lib/Spout.lib</staticLibrary>
-	<buildCopy>lib/Spout.dll</buildCopy>
+	<staticLibrary>lib/Spout2.lib</staticLibrary>
+	<buildCopy>lib/Spout2.dll</buildCopy>
 	<buildCopy>lib/SpoutPanel.exe</buildCopy>
 </block>
 <template>templates/Spout/template.xml</template>
