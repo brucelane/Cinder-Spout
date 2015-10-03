@@ -11,7 +11,7 @@
         Search for "SPOUT" to see what is required
 
     ==========================================================================
-    Copyright (C) 2014 Lynn Jarvis.
+    Copyright (C) 2015 Lynn Jarvis.
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -43,6 +43,7 @@
 
 #include "cinder/app/App.h"
 #include "cinder/app/RendererGl.h"
+#include "cinder/gl/gl.h"
 #include "cinder/gl/Batch.h"
 #include "cinder/gl/GlslProg.h"
 #include "cinder/ImageIo.h"
@@ -57,7 +58,7 @@ using namespace ci;
 using namespace ci::app;
 using namespace std;
 
-class _TBOX_PREFIX_App : public AppNative {
+class _TBOX_PREFIX_App : public App {
 public:
  	void setup();
 	void update();
@@ -100,16 +101,16 @@ void _TBOX_PREFIX_App::setup()
     g_Height = 512;
     setWindowSize( g_Width, g_Height );
     setFullScreen( false );
-    setResizable( false ); // keep the screen size constant for a sender
+    //setResizable( false ); // keep the screen size constant for a sender
     setFrameRate( 60.0f );
     // load an image to texture the demo cube with
-    cubeTexture = gl::Texture::create(loadImage(loadAsset("SpoutLogoMarble3.jpg")));
+    cubeTexture = gl::Texture::create(loadImage(loadAsset("SpoutLogoMarble3.jpg")), gl::Texture::Format().mipmap());
+    cubeTexture->bind();
     mGlslCube = gl::GlslProg::create(loadAsset("cubeshader.vert"), loadAsset("cubeshader.frag"));
     mBatchCube = gl::Batch::create(geom::Cube(), mGlslCube);
    
-    mCam.lookAt( vec3( 3, 2, -3 ), vec3(0) );
-    //mCubeRotation.setToIdentity();
-    glEnable( GL_TEXTURE_2D );
+    mCam.lookAt( vec3( 3, 2, 4 ), vec3(0) );
+
     gl::enableDepthRead();
     gl::enableDepthWrite(); 
 
@@ -119,9 +120,6 @@ void _TBOX_PREFIX_App::setup()
     bSenderInitialized = false;
     spoutSenderTexture =  gl::Texture::create(g_Width, g_Height);
     strcpy_s(SenderName, "CINDER Spout SDK Sender"); // we have to set a sender name first
-    // Optionally test for texture share compatibility
-    // bMemoryMode informs us whether Spout initialized for texture share or memory share
-    bMemoryMode = spoutsender.GetMemoryShareMode();
 
     // -------- SPOUT RECEIVER -----
     bReceiverInitialized = false;
@@ -184,8 +182,8 @@ void _TBOX_PREFIX_App::update()
     // ----------------------------
 
     // -------- SPOUT SENDER-------------
-    // Rotate the cube by .015 radians around an arbitrary axis
-    mCubeRotation *= rotate(0.015f, vec3(1, 1, 1));
+    // Rotate the cube by 0.2 degrees around the y-axis
+    mCubeRotation *= rotate(toRadians(0.2f), normalize(vec3(0, 1, 0)));
 
     mCam.setPerspective( 60, getWindowAspectRatio(), 1, 1000 );
     gl::setMatrices( mCam );
@@ -196,7 +194,9 @@ void _TBOX_PREFIX_App::draw()
     unsigned int width, height;
     char txtReceiver[256];
 
-    gl::setMatricesWindow( getWindowSize() );
+    gl::clear();
+
+    gl::setMatrices(mCam);
 
     // Save current global width and height - they will be changed
     // by receivetexture if the sender changes dimensions
@@ -209,12 +209,9 @@ void _TBOX_PREFIX_App::draw()
     if( ! cubeTexture )
         return;
 
-    cubeTexture->bind();
-    gl::pushMatrices();
+    gl::ScopedModelMatrix modelScope;
     gl::multModelMatrix(mCubeRotation);
     mBatchCube->draw();
-    gl::popMatrices();
-    cubeTexture->unbind();
 
     // -------- SPOUT RECEIVER-------------
     //
