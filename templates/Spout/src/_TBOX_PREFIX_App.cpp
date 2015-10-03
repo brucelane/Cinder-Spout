@@ -105,7 +105,6 @@ void _TBOX_PREFIX_App::setup()
     setFrameRate( 60.0f );
     // load an image to texture the demo cube with
     cubeTexture = gl::Texture::create(loadImage(loadAsset("SpoutLogoMarble3.jpg")), gl::Texture::Format().mipmap());
-    cubeTexture->bind();
     mGlslCube = gl::GlslProg::create(loadAsset("cubeshader.vert"), loadAsset("cubeshader.frag"));
     mBatchCube = gl::Batch::create(geom::Cube(), mGlslCube);
    
@@ -117,9 +116,17 @@ void _TBOX_PREFIX_App::setup()
     // -------- SPOUT -------------
     // Set up the texture we will use to send out
     // We grab the screen so it has to be the same size
-    bSenderInitialized = false;
     spoutSenderTexture =  gl::Texture::create(g_Width, g_Height);
     strcpy_s(SenderName, "CINDER Spout SDK Sender"); // we have to set a sender name first
+    // Optionally set for DirectX 9 instead of default DirectX 11 functions
+    //spoutsender.SetDX9(true); 
+
+    // Initialize a sender
+    bSenderInitialized = spoutsender.CreateSender(SenderName, g_Width, g_Height);
+
+    // Optionally test for texture share compatibility
+    // bMemoryMode informs us whether Spout initialized for texture share or memory share
+    bMemoryMode = spoutsender.GetMemoryShareMode();
 
     // -------- SPOUT RECEIVER -----
     bReceiverInitialized = false;
@@ -129,58 +136,6 @@ void _TBOX_PREFIX_App::setup()
 
 void _TBOX_PREFIX_App::update()
 {
-    unsigned int width, height;
-
-    // -------- SPOUT RECEIVER-------------
-    if(!bReceiverInitialized) {
-
-        nSenders = spoutreceiver.GetSenderCount();
-        // we wait for a sender
-        if (nSenders > 0)
-        {
-            // This is a receiver, so the initialization is a little more complex than a sender
-            // The receiver will attempt to connect to the name it is sent.
-            // Alternatively set the optional bUseActive flag to attempt to connect to the active sender. 
-            // If the sender name is not initialized it will attempt to find the active sender
-            // If the receiver does not find any senders the initialization will fail
-            // and "CreateReceiver" can be called repeatedly until a sender is found.
-            // "CreateReceiver" will update the passed name, and dimensions.
-            ReceiverSenderName[0] = NULL; // the name will be filled when the receiver connects to a sender
-            width  = g_Width; // pass the initial width and height (they will be adjusted if necessary)
-            height = g_Height;
-            if(spoutreceiver.CreateReceiver(ReceiverSenderName, width, height, true)) { // true to find the active sender
-                // Optionally test for texture share compatibility
-                // bMemoryMode informs us whether Spout initialized for texture share or memory share
-                bMemoryMode = spoutreceiver.GetMemoryShareMode();
-
-                // Is the size of the detected sender different from the current texture size ?
-                // This is detected for both texture share and memoryshare
-                if(width != g_Width || height != g_Height) {
-                    // Reset the global width and height
-                    g_Width = width;
-                    g_Height = height;
-                    // Reset the local receiving texture size
-                    spoutReceiverTexture =  gl::Texture::create(g_Width, g_Height);
-                    // reset render window
-                    setWindowSize(g_Width, g_Height);
-                } 
-                bReceiverInitialized = true;
-                // now that we receive, we can send
-                // Initialize a sender
-                bSenderInitialized = spoutsender.CreateSender(SenderName, g_Width, g_Height);
-                // Use DirectX 9 textures for maximum compatibility
-                // spoutsender.SetDX9(true);
-
-            }
-            else {
-                // Receiver initialization will fail if no senders are running
-                // Keep trying until one starts
-            }
-
-        }
-    } // endif not initialized
-    // ----------------------------
-
     // -------- SPOUT SENDER-------------
     // Rotate the cube by 0.2 degrees around the y-axis
     mCubeRotation *= rotate(toRadians(0.2f), normalize(vec3(0, 1, 0)));
@@ -211,69 +166,24 @@ void _TBOX_PREFIX_App::draw()
 
     gl::ScopedModelMatrix modelScope;
     gl::multModelMatrix(mCubeRotation);
+    cubeTexture->bind();
     mBatchCube->draw();
 
-    // -------- SPOUT RECEIVER-------------
-    //
-    // Try to receive the texture at the current size 
-    //
-    // NOTE : if ReceiveTexture is called with a framebuffer object bound, 
-    // include the FBO id as an argument so that the binding is restored afterwards
-    // because Spout uses an fbo for intermediate rendering
-    if(bReceiverInitialized) {
-        if(spoutreceiver.ReceiveTexture(ReceiverSenderName, width, height, spoutReceiverTexture->getId(), spoutReceiverTexture->getTarget())) {
-            //  Width and height are changed for sender change so the local texture has to be resized.
-            if(width != g_Width || height != g_Height ) {
-                // The sender dimensions have changed - update the global width and height
-                g_Width  = width;
-                g_Height = height;
-                // Update the local texture to receive the new dimensions
-                spoutReceiverTexture =  gl::Texture::create(g_Width, g_Height);
-                // reset render window
-                //setWindowSize(g_Width, g_Height);
-                return; // quit for next round
-            }
+    // -------- SPOUT SENDER-------------
+    if (bSenderInitialized) {
 
-            // Otherwise draw the texture and fill the screen
-            gl::draw(spoutReceiverTexture, getWindowBounds());
+        // Grab the screen (current read buffer) into the local spout texture
+        spoutSenderTexture->bind();
+        glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, g_Width, g_Height);
+        spoutSenderTexture->unbind();
 
-            // Show the user what it is receiving
-            gl::enableAlphaBlending();
-            sprintf_s(txtReceiver, "Receiving from [%s]", ReceiverSenderName);
-            gl::drawString( txtReceiver, vec2( toPixels( 20 ), toPixels( 40 ) ), Color( 1, 1, 1 ), Font( "Verdana", toPixels( 24 ) ) );
-            sprintf_s(txtReceiver, "fps : %2.2d", (int)getAverageFps());
-            gl::drawString( txtReceiver, vec2(getWindowWidth() - toPixels( 100 ), toPixels( 40 ) ), Color( 1, 1, 1 ), Font( "Verdana", toPixels( 24 ) ) );
-            gl::drawString( "RH click to select a sender", vec2( toPixels( 20 ), getWindowHeight() - toPixels( 80 ) ), Color( 1, 1, 1 ), Font( "Verdana", toPixels( 24 ) ) );
-            gl::disableAlphaBlending();
+        // Send the texture for all receivers to use
+        // NOTE : if SendTexture is called with a framebuffer object bound,
+        // include the FBO id as an argument so that the binding is restored afterwards
+        // because Spout uses an fbo for intermediate rendering
+        spoutsender.SendTexture(spoutSenderTexture->getId(), spoutSenderTexture->getTarget(), g_Width, g_Height);
 
-            // Send the received texture
 
-            // -------- SPOUT SENDER-------------
-            if(bSenderInitialized) {
-
-                // Grab the screen (current read buffer) into the local spout texture
-                /*spoutSenderTexture->bind();
-                glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, g_Width, g_Height);
-                spoutSenderTexture->unbind();
-                spoutsender.SendTexture(spoutSenderTexture->getId(), spoutSenderTexture->getTarget(), g_Width, g_Height);*/
-                // Send the texture for all receivers to use
-                // NOTE : if SendTexture is called with a framebuffer object bound, that binding will be lost
-                // and has to be restored afterwards because Spout uses an fbo for intermediate rendering
-                spoutsender.SendTexture(spoutReceiverTexture->getId(), spoutReceiverTexture->getTarget(), g_Width, g_Height);
-                // Show the user what it is sending
-                char txtSender[256];
-                sprintf_s(txtSender, "Sending as [%s]", SenderName);
-                gl::setMatricesWindow( getWindowSize() );
-                gl::enableAlphaBlending();
-                gl::drawString( txtSender, vec2( toPixels( 20 ), toPixels( 20 ) ), Color( 1, 1, 1 ), Font( "Verdana", toPixels( 24 ) ) );
-                sprintf_s(txtSender, "fps : %2.2d", (int)getAverageFps());
-                gl::drawString( txtSender, vec2(getWindowWidth() - toPixels( 100 ), toPixels( 20 ) ), Color( 1, 1, 1 ), Font( "Verdana", toPixels( 24 ) ) );
-                gl::disableAlphaBlending();
-
-            }
-
-            return; 
-        }
     }
 }
 void _TBOX_PREFIX_App::mouseDown(MouseEvent event)
