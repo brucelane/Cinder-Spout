@@ -1,10 +1,13 @@
 /*
 
-			Spout.h
+	spoutSharedMemory.h
+	
+	Thanks and credit to Malcolm Bechard the author of this class
 
-			The main Spout include file for the SDK
+	https://github.com/mbechard
 
-		Copyright (c) 2014-1015, Lynn Jarvis. All rights reserved.
+	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+		Copyright (c) 2014-2015, Lynn Jarvis. All rights reserved.
 
 		Redistribution and use in source and binary forms, with or without modification, 
 		are permitted provided that the following conditions are met:
@@ -26,16 +29,52 @@
 		LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 		OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 */
 #pragma once
 
-#ifndef __Spout__
-#define __Spout__
+#ifndef __SpoutSharedMemory_ // standard way as well
+#define __SpoutSharedMemory_
 
-#include "SpoutSender.h"
-#include "SpoutReceiver.h"
+#include "SpoutCommon.h"
+#include <windowsx.h>
+#include <d3d9.h>
+#include <wingdi.h>
 
-//	All documentation in the SDK pdf = SpoutSDK.pdf
+enum SpoutCreateResult
+{
+	SPOUT_CREATE_FAILED = 0,
+	SPOUT_CREATE_SUCCESS,
+	SPOUT_ALREADY_EXISTS,
+	SPOUT_ALREADY_CREATED,
+};
+
+class SPOUT_DLLEXP SpoutSharedMemory {
+public:
+	SpoutSharedMemory();
+	~SpoutSharedMemory();
+
+
+	// Create a new memory segment, or attachs to an existing one
+	SpoutCreateResult	Create(const char* name, int size);
+
+	// Opens an existing one
+	bool	Open(const char* name);
+	void	Close();
+
+	// Returns the buffer
+	char*	Lock();
+	void	Unlock();
+
+	void	Debug();
+private:
+	char*	m_pBuffer;
+	HANDLE	m_hMap;
+	HANDLE	m_hMutex;
+
+	int		m_lockCount;
+
+	const char*	m_pName;
+	int			m_size;
+};
 
 #endif
