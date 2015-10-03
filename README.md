@@ -1,7 +1,7 @@
 Cinder-Spout
 ============
 
-Cinder version 0.8.6 block for Spout ( http://spout.zeal.co/ )
+Cinder version 0.9.0 block for Spout ( http://spout.zeal.co/ )
 
 Setup Spout 2.004 or later
 
