@@ -1,5 +1,5 @@
 /*
-                
+
         Basic Spout sender for Cinder
 
         Search for "SPOUT" to see what is required
@@ -11,7 +11,7 @@
         Search for "SPOUT" to see what is required
 
     ==========================================================================
-    Copyright (C) 2015 Lynn Jarvis.
+    Copyright (C) 2014-2016 Lynn Jarvis.
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -38,6 +38,9 @@
     21.05.15 - Added optional SetDX9 call
              - Recompiled for both DX9 and DX11 for new installer
     26.05.15 - Recompile for revised SpoutPanel registry write of sender name
+    01.07.15 - Convert project to VS2012
+             - add a window title
+    30-03-16 - Rebuild for Spout 2.005 release - VS2012 /MT
 
 */
 
@@ -65,7 +68,7 @@ public:
 	void draw();
     void mouseDown(MouseEvent event);
     void shutdown();
-    
+
 private:
     // spout
     // still using the cam vars from the cinder demo
@@ -80,7 +83,7 @@ private:
     bool                bSenderInitialized;             // true if a sender initializes OK
     bool                bMemoryMode;                    // tells us if texture share compatible
     unsigned int        g_Width, g_Height;              // size of the texture being sent out
-    char                SenderName[256];                // sender name 
+    char                SenderName[256];                // sender name
     gl::TextureRef      spoutSenderTexture;             // Local Cinder texture used for sharing
     // -------- SPOUT RECEIVER ----
     bool                bReceiverInitialized;           // true if a receiver initializes OK
@@ -98,7 +101,7 @@ private:
 void _TBOX_PREFIX_App::setup()
 {
     g_Width  = 640;
-    g_Height = 512;
+    g_Height = 360;
     setWindowSize( g_Width, g_Height );
     setFullScreen( false );
     //setResizable( false ); // keep the screen size constant for a sender
@@ -107,11 +110,11 @@ void _TBOX_PREFIX_App::setup()
     cubeTexture = gl::Texture::create(loadImage(loadAsset("SpoutLogoMarble3.jpg")), gl::Texture::Format().mipmap());
     mGlslCube = gl::GlslProg::create(loadAsset("cubeshader.vert"), loadAsset("cubeshader.frag"));
     mBatchCube = gl::Batch::create(geom::Cube(), mGlslCube);
-   
+
     mCam.lookAt( vec3( 3, 2, 4 ), vec3(0) );
 
     gl::enableDepthRead();
-    gl::enableDepthWrite(); 
+    gl::enableDepthWrite();
 
     // -------- SPOUT -------------
     // Set up the texture we will use to send out
@@ -119,7 +122,7 @@ void _TBOX_PREFIX_App::setup()
     spoutSenderTexture =  gl::Texture::create(g_Width, g_Height);
     strcpy_s(SenderName, "CINDER Spout SDK Sender"); // we have to set a sender name first
     // Optionally set for DirectX 9 instead of default DirectX 11 functions
-    //spoutsender.SetDX9(true); 
+    //spoutsender.SetDX9(true);
 
     // Initialize a sender
     bSenderInitialized = spoutsender.CreateSender(SenderName, g_Width, g_Height);
@@ -157,10 +160,10 @@ void _TBOX_PREFIX_App::draw()
     // by receivetexture if the sender changes dimensions
     width  = g_Width;
     height = g_Height;
-   
+
     gl::clear( Color( 0.39f, 0.025f, 0.0f ) ); // red/brown to be different
-    gl::color( Color( 1, 1, 1 ) );  
-    
+    gl::color( Color( 1, 1, 1 ) );
+
     if( ! cubeTexture )
         return;
 
