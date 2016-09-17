@@ -3,7 +3,7 @@
 <block
 	name="Spout"
 	id="fr.batchass.spout"
-	author="Bruce Lane"
+	author="Bruce Lane/Eric Renaud-Houde"
 	license="MIT"
 	summary="Spout block for Cinder"
 	url="https://github.com/brucelane/Cinder-Spout"

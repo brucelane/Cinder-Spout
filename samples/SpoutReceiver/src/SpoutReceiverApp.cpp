@@ -46,10 +46,9 @@
 */
 
 #include "cinder/app/App.h"
-#include "cinder/gl/Texture.h"
+#include "cinder/app/RendererGl.h"
 
-// spout
-#include "spout.h"
+#include "CiSpoutIn.h"
 
 using namespace ci;
 using namespace ci::app;
@@ -57,157 +56,54 @@ using namespace std;
 
 class SpoutReceiverApp : public App {
 public:
-	void setup();
-	void draw();
-	void update();
-	void mouseDown(MouseEvent event);
+	void draw() override;
+	void update() override;
+	void mouseDown(MouseEvent event) override;
 
-	// -------- SPOUT -------------
-	SpoutReceiver spoutreceiver;				// Create a Spout receiver object
-	void prepareSettings(Settings *settings);
-	void shutdown();
-	bool bInitialized;							// true if a sender initializes OK
-	bool bDoneOnce;								// only try to initialize once
-	bool bMemoryMode;							// tells us if texture share compatible
-	unsigned int g_Width, g_Height;				// size of the texture being sent out
-	char SenderName[256];						// sender name 
-	gl::Texture spoutTexture;					// Local Cinder texture used for sharing
-	// ----------------------------
-
+	SpoutIn	mSpoutIn;
 };
-
-// -------- SPOUT -------------
-void SpoutReceiverApp::prepareSettings(Settings *settings)
-{
-	g_Width = 320; // set global width and height to something
-	g_Height = 240; // they need to be reset when the receiver connects to a sender
-	settings->setWindowSize(g_Width, g_Height);
-	settings->setFullScreen(false);
-	settings->setResizable(true); // allowed for a receiver
-	settings->setFrameRate(60.0f);
-
-}
-// ----------------------------
-
-void SpoutReceiverApp::setup()
-{
-
-}
-
 
 void SpoutReceiverApp::update()
 {
-	unsigned int width, height;
-
-	// -------- SPOUT -------------
-	if (!bInitialized) {
-
-		// This is a receiver, so the initialization is a little more complex than a sender
-		// The receiver will attempt to connect to the name it is sent.
-		// Alternatively set the optional bUseActive flag to attempt to connect to the active sender. 
-		// If the sender name is not initialized it will attempt to find the active sender
-		// If the receiver does not find any senders the initialization will fail
-		// and "CreateReceiver" can be called repeatedly until a sender is found.
-		// "CreateReceiver" will update the passed name, and dimensions.
-		SenderName[0] = NULL; // the name will be filled when the receiver connects to a sender
-		width = g_Width; // pass the initial width and height (they will be adjusted if necessary)
-		height = g_Height;
-
-		// Optionally set for DirectX 9 instead of default DirectX 11 functions
-		// spoutreceiver.SetDX9(true);	
-
-		// Initialize a receiver
-		if (spoutreceiver.CreateReceiver(SenderName, width, height, true)) { // true to find the active sender
-			// Optionally test for texture share compatibility
-			// bMemoryMode informs us whether Spout initialized for texture share or memory share
-			bMemoryMode = spoutreceiver.GetMemoryShareMode();
-
-			// Is the size of the detected sender different from the current texture size ?
-			// This is detected for both texture share and memoryshare
-			if (width != g_Width || height != g_Height) {
-				// Reset the global width and height
-				g_Width = width;
-				g_Height = height;
-				// Reset the local receiving texture size
-				spoutTexture = gl::Texture(g_Width, g_Height);
-				// reset render window
-				setWindowSize(g_Width, g_Height);
-			}
-			bInitialized = true;
-		}
-		else {
-			// Receiver initialization will fail if no senders are running
-			// Keep trying until one starts
-		}
-	} // endif not initialized
-	// ----------------------------
-
+	if( mSpoutIn.getSize() != app::getWindowSize() ) {
+		app::setWindowSize( mSpoutIn.getSize() );
+	}
 }
+
 void SpoutReceiverApp::draw()
 {
-	unsigned int width, height;
-	char txt[256];
-
-	gl::setMatricesWindow(getWindowSize());
 	gl::clear();
-	gl::color(Color(1, 1, 1));
 
-	// Save current global width and height - they will be changed
-	// by receivetexture if the sender changes dimensions
-	width = g_Width;
-	height = g_Height;
+	auto tex = mSpoutIn.receiveTexture();
+	if( tex ) {
+		// Otherwise draw the texture and fill the screen
+		gl::draw( tex, getWindowBounds() );
 
-	//
-	// Try to receive the texture at the current size 
-	//
-	// NOTE : if ReceiveTexture is called with a framebuffer object bound, 
-	// include the FBO id as an argument so that the binding is restored afterwards
-	// because Spout uses an fbo for intermediate rendering
-	if (bInitialized) {
-		if (spoutreceiver.ReceiveTexture(SenderName, width, height, spoutTexture.getId(), spoutTexture.getTarget())) {
-			//	Width and height are changed for sender change so the local texture has to be resized.
-			if (width != g_Width || height != g_Height) {
-				// The sender dimensions have changed - update the global width and height
-				g_Width = width;
-				g_Height = height;
-				// Update the local texture to receive the new dimensions
-				spoutTexture = gl::Texture(g_Width, g_Height);
-				// reset render window
-				setWindowSize(g_Width, g_Height);
-				return; // quit for next round
-			}
-
-			// Otherwise draw the texture and fill the screen
-			gl::draw(spoutTexture, getWindowBounds());
-
-			// Show the user what it is receiving
-			gl::enableAlphaBlending();
-			sprintf_s(txt, "Receiving from [%s]", SenderName);
-			gl::drawString(txt, Vec2f(toPixels(20), toPixels(20)), Color(1, 1, 1), Font("Verdana", toPixels(24)));
-			sprintf_s(txt, "fps : %2.2d", (int)getAverageFps());
-			gl::drawString(txt, Vec2f(getWindowWidth() - toPixels(100), toPixels(20)), Color(1, 1, 1), Font("Verdana", toPixels(24)));
-			gl::drawString("RH click to select a sender", Vec2f(toPixels(20), getWindowHeight() - toPixels(40)), Color(1, 1, 1), Font("Verdana", toPixels(24)));
-			gl::disableAlphaBlending();
-			return; // received OK
-		}
+		// Show the user what it is receiving
+		gl::ScopedBlendAlpha alpha;
+		gl::enableAlphaBlending();
+		gl::drawString( "Receiving from: " + mSpoutIn.getSenderName(), vec2( toPixels( 20 ), toPixels( 20 ) ), Color( 1, 1, 1 ), Font( "Verdana", toPixels( 24 ) ) );
+		gl::drawString( "fps: " + std::to_string( (int)getAverageFps() ), vec2( getWindowWidth() - toPixels( 100 ), toPixels( 20 ) ), Color( 1, 1, 1 ), Font( "Verdana", toPixels( 24 ) ) );
+		gl::drawString( "RH click to select a sender", vec2( toPixels( 20 ), getWindowHeight() - toPixels( 40 ) ), Color( 1, 1, 1 ), Font( "Verdana", toPixels( 24 ) ) );
 	}
-
-	gl::enableAlphaBlending();
-	gl::drawString("No sender detected", Vec2f(toPixels(20), toPixels(20)), Color(1, 1, 1), Font("Verdana", toPixels(24)));
-	gl::disableAlphaBlending();
-	// ----------------------------
+	else {
+		gl::ScopedBlendAlpha alpha;
+		gl::enableAlphaBlending();
+		gl::drawString( "No sender/texture detected", vec2( toPixels( 20 ), toPixels( 20 ) ), Color( 1, 1, 1 ), Font( "Verdana", toPixels( 24 ) ) );
+	}
 }
 void SpoutReceiverApp::mouseDown(MouseEvent event)
 {
-	if (event.isRightDown()) { // Select a sender
+	if( event.isRightDown() ) { // Select a sender
 		// SpoutPanel.exe must be in the executable path
-		spoutreceiver.SelectSenderPanel(); // DirectX 11 by default
+		mSpoutIn.getSpoutReceiver().SelectSenderPanel(); // DirectX 11 by default
 	}
 }
-// -------- SPOUT -------------
-void SpoutReceiverApp::shutdown()
+
+void prepareSettings( App::Settings *settings )
 {
-	spoutreceiver.ReleaseReceiver();
+	settings->setWindowSize( 320, 240 );
 }
+
 // This line tells Cinder to actually create the application
-CINDER_APP( SpoutReceiverApp, RendererGl )
+CINDER_APP( SpoutReceiverApp, RendererGl, prepareSettings )
