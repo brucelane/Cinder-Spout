@@ -14,8 +14,8 @@ namespace cinder {
 		SpoutOut( const std::string& name, const ivec2& size )
 			: mMemorySharedMode{ false }
 			, mSize{ size }
+			, mName{ name }
 		{
-			mName = name;
 			if( mSpoutSender.CreateSender( mName.c_str(), mSize.x, mSize.y ) ) {
 				mMemorySharedMode = mSpoutSender.GetMemoryShareMode();
 				CI_LOG_I( "Memory share: " << mMemorySharedMode );

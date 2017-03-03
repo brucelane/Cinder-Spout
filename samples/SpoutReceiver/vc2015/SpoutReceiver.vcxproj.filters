@@ -13,6 +13,15 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
     </Filter>
+    <Filter Include="blocks">
+      <UniqueIdentifier>{e8a2f879-61b0-4d43-800c-459ea7dc66d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="blocks\Cinder-Spout">
+      <UniqueIdentifier>{c3f7d7f7-9fd2-47ca-ab1a-de4104f53b16}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="blocks\Cinder-Spout\include">
+      <UniqueIdentifier>{25022d5d-0f98-4bd0-8968-76015117119c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\SpoutReceiverApp.cpp">
@@ -28,6 +37,9 @@
   <ItemGroup>
     <ClInclude Include="..\include\Resources.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\CiSpoutIn.h">
+      <Filter>blocks\Cinder-Spout\include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
