@@ -100,7 +100,7 @@ xcopy /y "..\..\..\lib\SpoutPanel.exe" "$(OutDir)"</Command>
       <EnableCOMDATFolding />
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention />
-    </Link>
+    </Link> 
     <PostBuildEvent>
       <Command>xcopy /y "..\..\..\lib\Spout.dll" "$(OutDir)"
 
