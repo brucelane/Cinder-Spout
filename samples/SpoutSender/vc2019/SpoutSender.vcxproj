@@ -69,7 +69,8 @@
     </Link>
     <PostBuildEvent>
       <Command>xcopy /y "..\..\..\lib\Spout.dll" "$(OutDir)"
-xcopy /y "..\..\..\lib\SpoutPanel.exe" "$(OutDir)"</Command>
+
+xcopy /y "..\..\..\lib\SpoutPanel.exe" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -102,7 +103,8 @@
     </Link>
     <PostBuildEvent>
       <Command>xcopy /y "..\..\..\lib\Spout.dll" "$(OutDir)"
-xcopy /y "..\..\..\lib\SpoutPanel.exe" "$(OutDir)"</Command>
+
+xcopy /y "..\..\..\lib\SpoutPanel.exe" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
