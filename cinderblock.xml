@@ -6,11 +6,13 @@
 	author="Bruce Lane/Eric Renaud-Houde"
 	license="MIT"
 	summary="Spout block for Cinder"
+	version="1.0.20200530"
 	url="https://github.com/brucelane/Cinder-Spout"
 	git="git://github.com/brucelane/Cinder-Spout.git"
 	>
 	<supports os="msw" />
 	<includePath>include</includePath>
+	<headerPattern>include/*.h</headerPattern>
 	<staticLibrary>lib/Spout.lib</staticLibrary>
 	<buildCopy>lib/Spout.dll</buildCopy>
 	<buildCopy>lib/SpoutPanel.exe</buildCopy>
