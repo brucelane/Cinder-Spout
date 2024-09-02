@@ -16,18 +16,18 @@ namespace cinder {
 			, mSize{ size }
 			, mName{ name }
 		{
-			if( mSpoutSender.CreateSender( mName.c_str(), mSize.x, mSize.y ) ) {
+			/*if( mSpoutSender.CreateSender( mName.c_str(), mSize.x, mSize.y ) ) {
 				mMemorySharedMode = mSpoutSender.GetMemoryShareMode();
-				CI_LOG_I( "Memory share: " << mMemorySharedMode );
+				CI_LOG_I( "Memory share: " << mMemorySharedMode ); */
 				mTexture = gl::Texture2d::create( mSize.x, mSize.y, gl::Texture::Format().loadTopDown() );
-			}
+			/* }
 			else {
 				throw std::exception( " Failed to initialize sender." );
-			}
+			} */
 		}
 
 		~SpoutOut() {
-			mSpoutSender.ReleaseSender();
+			// obsolete mSpoutSender.ReleaseSender();
 		}
 
 		void sendTexture( const gl::Texture2dRef& texture ) {
@@ -61,13 +61,13 @@ namespace cinder {
 	private:
 		bool resize()
 		{
-			if( mTexture && mSize == glm::uvec2( mTexture->getSize() ) )
+			/* obsolete if( mTexture && mSize == glm::uvec2( mTexture->getSize() ) )
 				return false;
 
 			mSpoutSender.UpdateSender( mName.c_str(), mSize.x, mSize.y );
 			
 			mTexture = gl::Texture2d::create( mSize.x, mSize.y, gl::Texture::Format().loadTopDown() );
-			CI_LOG_I( "Recreated texture with size: " << mSize );
+			CI_LOG_I( "Recreated texture with size: " << mSize ); */
 			return true;
 		}
 
