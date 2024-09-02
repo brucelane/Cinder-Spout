@@ -65,9 +65,9 @@ public:
 
 void SpoutReceiverApp::update()
 {
-	if (mSpoutIn.getSize() != app::getWindowSize()) {
+	/* if (mSpoutIn.getSize() != app::getWindowSize()) {
 		app::setWindowSize(mSpoutIn.getSize());
-	}
+	} */
 }
 
 void SpoutReceiverApp::draw()
@@ -95,8 +95,9 @@ void SpoutReceiverApp::draw()
 void SpoutReceiverApp::mouseDown(MouseEvent event)
 {
 	if (event.isRightDown()) { // Select a sender
-							   // SpoutPanel.exe must be in the executable path
-		mSpoutIn.getSpoutReceiver().SelectSenderPanel(); // DirectX 11 by default
+		// obsolete SpoutPanel.exe must be in the executable path
+		// obsolete mSpoutIn.getSpoutReceiver().SelectSenderPanel(); // DirectX 11 by default
+		mSpoutIn.getSpoutReceiver().SelectSender(); 
 	}
 }
 

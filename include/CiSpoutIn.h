@@ -2,7 +2,9 @@
 
 #include "cinder/gl/gl.h"
 #include "cinder/Log.h"
-#include "spout.h"
+
+// SPOUT
+#include "SpoutReceiver.h"
 
 namespace cinder {
 
@@ -41,10 +43,13 @@ public:
 			// If the receiver does not find any senders the initialization will fail
 			// and "CreateReceiver" can be called repeatedly until a sender is found.
 			// "CreateReceiver" will update the passed name, and dimensions.
-			mSenderName[0] = NULL; // the name will be filled when the receiver connects to a sender
 			// Optionally set for DirectX 9 instead of default DirectX 11 functions
 			// mSpoutReceiver.SetDX9(true);
-			if (mSpoutReceiver.CreateReceiver(mSenderName, mSize.x, mSize.y, true)) {
+			// mSenderName[0] = NULL; // the name will be filled when the receiver connects to a sender
+			// ReceiveTexture connects to and receives from a sender
+			// Optionally include the ID of an fbo if one is currently bound
+			mSpoutReceiver.ReceiveTexture(mTexture->getId(), mTexture->getTarget(), true);
+			/* if (mSpoutReceiver.CreateReceiver(mSenderName, mSize.x, mSize.y, true)) {
 				// Optionally test for texture share compatibility
 				// GetMemoryShareMode informs us whether Spout initialized for texture share or memory share
 				mMemorySharedMode = mSpoutReceiver.GetMemoryShareMode();
@@ -57,7 +62,7 @@ public:
 				// Receiver initialization will fail if no senders are running
 				// Keep trying until one starts
 				//throw std::exception( " Failed to initialize receiver." );
-			}
+			} */
 			return resize() ? nullptr : mTexture;
 		}
 
@@ -71,12 +76,22 @@ public:
 private:
 	bool resize()
 	{
-		if( mTexture && mSize == glm::uvec2( mTexture->getSize() ) )
+		/* if( mTexture && mSize == glm::uvec2( mTexture->getSize() ) )
 			return false;
 
 		CI_LOG_I( "Recreated texture with size: " << mSize );
 		mTexture = gl::Texture2d::create( mSize.x, mSize.y, gl::Texture::Format().loadTopDown() );
-		return true;
+		return true; */
+		// If Updated() returns true, the sender size has changed.
+		// Resize the receiving texture.
+		if (mSpoutReceiver.IsUpdated()) {
+			mTexture.reset();
+			mTexture = gl::Texture2d::create(mSpoutReceiver.GetSenderWidth(), mSpoutReceiver.GetSenderHeight());
+			return true;
+		}
+		else {
+			return false;
+		}
 	}
 
 	bool				mMemorySharedMode;

@@ -3,7 +3,7 @@
 #include "cinder/app/App.h"
 #include "cinder/gl/gl.h"
 #include "cinder/Log.h"
-#include "spout.h"
+#include "SpoutSender.h"
 
 #include <string>
 
