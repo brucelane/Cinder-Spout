@@ -13,7 +13,12 @@
 	<supports os="msw" />
 	<includePath>include</includePath>
 	<headerPattern>include/*.h</headerPattern>
-	<staticLibrary>lib/Spout_static.lib</staticLibrary>
+	<platform os="msw" config="debug">
+		<staticLibrary>lib/Spout_static_d.lib</staticLibrary>
+	</platform>
+	<platform os="msw" config="release">
+		<staticLibrary>lib/Spout_static.lib</staticLibrary>
+	</platform>
 </block>
 <template>templates/Spout/template.xml</template>
 </cinder>
