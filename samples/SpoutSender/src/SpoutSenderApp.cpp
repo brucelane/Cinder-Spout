@@ -68,12 +68,12 @@ public:
 	void draw() override;
 	void resize() override;
 
-	gl::BatchRef mBatch;
+	gl::BatchRef	mBatch;
 
 	CameraPersp		mCamera;
 	CameraUi		mCameraUi;
 
-	SpoutOut mSpoutOut;
+	SpoutOut		mSpoutOut;
 };
 
 SpoutSenderApp::SpoutSenderApp()
