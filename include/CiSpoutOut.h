@@ -53,6 +53,13 @@ namespace cinder {
 			}
 		}
 
+		// The constructor's name is never handed to Spout, so Spout names the sender after the
+		// executable - existing outputs (and Resolume compositions pointing at them) rely on that.
+		// Call this before the first send only for an additional sender that needs its own name.
+		void					setSenderName( const std::string& name ) {
+			mName = name;
+			mSpoutSender.SetSenderName( mName.c_str() );
+		}
 		glm::ivec2				getSize() const { return mSize; }
 		std::string				getName() const { return mName; }
 		SpoutSender&			getSpoutSender() { return mSpoutSender; }
